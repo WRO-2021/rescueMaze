@@ -1,0 +1,1 @@
+leggere i commenti in explorer.h per le info dettagliate, la prima sezione riguarda l'utilizzo della classe
