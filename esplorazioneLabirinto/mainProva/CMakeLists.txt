@@ -3,7 +3,7 @@ project(untitled)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(../LabyrinthExplorer)
+include_directories(..)
 
-add_executable(untitled main.cpp ../LabyrinthExplorer/explorer.h ../LabyrinthExplorer/explorer.cpp ../LabyrinthExplorer/coor.cpp ../LabyrinthExplorer/labirinto.cpp)
+add_executable(untitled main.cpp ../explorer.h ../explorer.cpp ../coor.cpp ../labirinto.cpp)
 
