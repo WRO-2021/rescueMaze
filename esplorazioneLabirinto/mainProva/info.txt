@@ -1,1 +1,1 @@
-main con una prova della classe, tutto da linea di comando
+main con una prova della classe, tutto da linea di comando. Il progetto funziona con cmake, se no vanno incluse le librerie in modo diverso, ma non sono capace
