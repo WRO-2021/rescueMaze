@@ -1,0 +1,97 @@
+package pacco;
+
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.DeliverCallback;
+
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
+
+public class MainCoso {
+    public static boolean verbose = false;
+    private static void send(String message, String queueName,String ipHost) throws Exception {
+        ConnectionFactory postman = new ConnectionFactory();
+        Connection connection = postman.newConnection("amqp://guest:guest@"+ipHost+":5672/");
+        Channel channel = connection.createChannel();
+        channel.queueDeclare(queueName, false, false, false, null);
+        channel.basicPublish("", queueName, null, message.getBytes());
+        channel.close();
+        connection.close();
+    }
+    private static String receive(String queueName,String ipHost) throws IOException, TimeoutException {
+        ConnectionFactory postman = new ConnectionFactory();
+        Connection connection = postman.newConnection("amqp://guest:guest@"+ipHost+":5672/");
+        Channel channel = connection.createChannel();
+        channel.queueDeclare(queueName, false, false, false, null);
+        if(verbose) System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+
+        AtomicReference<String> message = null;
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            message.set(new String(delivery.getBody(), "UTF-8"));
+            if(verbose) System.out.println(" [x] Received '" + message + "'");
+        };
+        channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
+        return message.get();
+    }
+
+
+
+    public static void main(String[] args) throws Exception {
+        for(String arg:args){
+            if (arg.equals("-v"))
+                verbose = true;
+            if(arg.equals("-h")){
+                System.out.println("Usage: java -jar pacco.jar [-v] [-h]");
+                System.out.println("-v: verbose mode");
+                System.out.println("-h: help");
+                System.exit(0);
+            }
+        }
+        Esploratore esploratore = new Esploratore();
+
+        String ipHost = "localhost",message,queueName="Esplorazione";
+
+        while(true) {
+            try{
+                message = receive(queueName,ipHost);
+                if(message.substring(0,8).equals("Esplora:")) {
+                    switch (message.substring(8)) {
+                        case "m"://movements
+                            switch (message.substring(9)) {
+                                case "1" -> esploratore.right();
+                                case "0" -> esploratore.forward();
+                                case "2" -> esploratore.left();
+                            }
+                        case "u"://unknown, track to U
+                            int[] U = esploratore.getMovements();
+                            String U_string = "";
+                            for (int i = 0; i < U.length; i++) {
+                                U_string += U[i];
+                                U_string += ",";
+                            }
+                            send(U_string, queueName,ipHost);
+                        case "f"://flags, qualcosa con le flag
+                            switch (message.substring(9)) {
+                                case "d" :
+                                    esploratore.setDanger(5);
+                                    break;
+                                case "c":
+                                    esploratore.setLastCheckpoint();
+                                    break;
+                                case "g":
+                                    esploratore.goToCheckpoint();
+                            }
+                    }
+                }
+                if(verbose) System.out.println(esploratore);
+
+            }catch (Exception e){
+                if(verbose) System.out.println("Errore di connessione");   //se non riesce a connettersi al broker
+            }
+        }
+
+
+    }
+}
