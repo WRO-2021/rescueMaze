@@ -76,12 +76,12 @@ public class Esploratore {
         int last=direction,tmp;
         LinkedList<Integer> movements=new LinkedList<>();
         //in base all'ultima direzione calcola il movimento da fare per ogni direzione
-        for(int i=0;i<raw.length;i++){
-            tmp=(4-last+raw[i])%4;
-            if(tmp!=0)
+        for (int j : raw) {
+            tmp = (4 - last + j) % 4;
+            if (tmp != 0)
                 movements.add(tmp);
             movements.add(0);
-            last=raw[i];
+            last = j;
         }
         return movements.stream().mapToInt(i->i).toArray();
     }
