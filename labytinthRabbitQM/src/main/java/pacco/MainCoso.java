@@ -6,6 +6,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DeliverCallback;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -44,7 +45,7 @@ public class MainCoso {
 
         AtomicReference<String> message = null;
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            message.set(new String(delivery.getBody(), "UTF-8"));
+            message.set(new String(delivery.getBody(), StandardCharsets.UTF_8));
             if(verbose) System.out.println(" [x] Received '" + message + "'");
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
@@ -71,7 +72,7 @@ public class MainCoso {
         while(true) {
             try{
                 message = receive(queueName,ipHost);
-                if(message.substring(0,8).equals("Esplora:")) {
+                if(message.startsWith("Esplora:")) {
                     switch (message.substring(8)) {
                         case "m"://movements
                             switch (message.substring(9)) {
@@ -82,21 +83,16 @@ public class MainCoso {
                         case "u"://unknown, track to U
                             int[] U = esploratore.getMovements();
                             String U_string = "";
-                            for (int i = 0; i < U.length; i++) {
-                                U_string += U[i];
+                            for (int j : U) {
+                                U_string += j;
                                 U_string += ",";
                             }
                             send(U_string, queueName,ipHost);
                         case "f"://flags, qualcosa con le flag
                             switch (message.substring(9)) {
-                                case "d" :
-                                    esploratore.setDanger(5);
-                                    break;
-                                case "c":
-                                    esploratore.setLastCheckpoint();
-                                    break;
-                                case "g":
-                                    esploratore.goToCheckpoint();
+                                case "d" -> esploratore.setDanger(5);
+                                case "c" -> esploratore.setLastCheckpoint();
+                                case "g" -> esploratore.goToCheckpoint();
                             }
                     }
                 }

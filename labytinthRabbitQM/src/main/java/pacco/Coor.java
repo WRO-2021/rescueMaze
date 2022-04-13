@@ -3,8 +3,8 @@ package pacco;
 public class Coor {
 
     public static Coor ZERO=new Coor(0,0);
-    private int x;
-    private int y;
+    private final int x;
+    private final int y;
 
 
     public Coor(int x, int y) {

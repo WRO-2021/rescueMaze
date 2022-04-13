@@ -20,9 +20,9 @@ import static java.lang.Math.abs;
  * @author Samuele Facenda
  */
 public class LabyNode {
-    private LabyNode[] near;
+    private final LabyNode[] near;
     private static ArrayList<LabyNode> alls;
-    private char[] wall;
+    private final char[] wall;
     private boolean isDanger, isCheckpoint;
     private boolean isVisited, bfsFlag;
 
@@ -130,8 +130,8 @@ public class LabyNode {
      * @param to nodo da aggiungere
      */
     private static void insertNode(LabyNode from, int i, LabyNode to){
-        Queue<LabyNode> q = new java.util.LinkedList<LabyNode>();//queue per la bfs di nodi
-        Queue<Coor> n = new java.util.LinkedList<Coor>();//queue parallela di coordinate
+        Queue<LabyNode> q = new java.util.LinkedList<>();//queue per la bfs di nodi
+        Queue<Coor> n = new java.util.LinkedList<>();//queue parallela di coordinate
 
         q.add(from);
         n.add(Coor.ZERO.move(getOpposite(i)));//la cella da aggiungere è la 0,0, così calcolo le coor della cella from
@@ -173,15 +173,15 @@ public class LabyNode {
      * @return array di direzioni
      */
     public int[] trackToUnkown() {
-        Queue<LabyNode> nodeQueue = new java.util.LinkedList<LabyNode>();
-        Queue<Coor> coorQueue = new java.util.LinkedList<Coor>();
-        Queue<Queue<Coor>> tracksQueue = new java.util.LinkedList<Queue<Coor>>();
+        Queue<LabyNode> nodeQueue = new java.util.LinkedList<>();
+        Queue<Coor> coorQueue = new java.util.LinkedList<>();
+        Queue<Queue<Coor>> tracksQueue = new java.util.LinkedList<>();
 
         nodeQueue.add(this);
         coorQueue.add(Coor.ZERO);
         this.setBfsFlag(true);
 
-        Queue<Coor> tmpCoor=new java.util.LinkedList<Coor>();
+        Queue<Coor> tmpCoor= new java.util.LinkedList<>();
         tmpCoor.add(Coor.ZERO);
         tracksQueue.add(tmpCoor);
 
@@ -203,7 +203,7 @@ public class LabyNode {
                 //e esistente
                 if(tmp != null && !tmp.isBfsFlag() && cur.getWall(j) == 'f' && !tmp.isDanger()){
 
-                    tmpCoor2=new java.util.LinkedList<Coor>(tmpCoor);//creo una copia della queue di coordinare e ci aggiungo la nuova coordinate
+                    tmpCoor2= new java.util.LinkedList<>(tmpCoor);//creo una copia della queue di coordinare e ci aggiungo la nuova coordinate
                     tmpCoor2.add(c.move(j));
                     tracksQueue.add(tmpCoor2);
                     nodeQueue.add(tmp);
@@ -281,9 +281,10 @@ public class LabyNode {
      * @param dir direzione del robot, per segnarlo nella mappa con una freccetta adeguata
      * @return stringa rappresentativa della mappa
      */
+    @SuppressWarnings("UnusedAssignment")
     public String toString(int dir){
-            Queue<LabyNode> bfs = new java.util.LinkedList<LabyNode>();
-            Queue<Coor> bfsC = new java.util.LinkedList<Coor>();
+            Queue<LabyNode> bfs = new java.util.LinkedList<>();
+            Queue<Coor> bfsC = new java.util.LinkedList<>();
             ArrayList<LabyNode> all=new ArrayList<>();
             ArrayList<Coor> coor=new ArrayList<>();//array parallelo ad all, con le coordinate della cella
             int minX=0,maxX=0,minY=0,maxY=0;
