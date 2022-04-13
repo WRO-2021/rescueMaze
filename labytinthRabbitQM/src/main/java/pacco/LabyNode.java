@@ -5,6 +5,20 @@ import java.util.Queue;
 
 import static java.lang.Math.abs;
 
+/**
+ * classe nodo del labirinto, pensa a tutto lei, genera nuovi nodi, li aggiunge,
+ * trova percorsi per celle sconosciute accessibili
+ *
+ * è una specie di grafo, ma fatto a quadrati
+ *
+ * notazione direzionale standard:
+ * 0 sopra(nord)
+ * 1 destra(est)
+ * 2 sotto(sud)
+ * 3 sinistra(ovest)
+ *
+ * @author Samuele Facenda
+ */
 public class LabyNode {
     private LabyNode[] near;
     private static ArrayList<LabyNode> alls;
@@ -12,6 +26,9 @@ public class LabyNode {
     private boolean isDanger, isCheckpoint;
     private boolean isVisited, bfsFlag;
 
+    /**
+     * costruttore iniziale, ressetta la lista di tutti i nodi precendenti, setta questa cella a già visitata
+     */
     public LabyNode(){
         alls=new ArrayList<>();
         alls.add(this);
@@ -26,6 +43,12 @@ public class LabyNode {
             near[i] = null;
         }
     }
+
+    /**
+     * costruttore che attacca questo nodo alla cella indicata in direzione invitata
+     * @param n nodo da attaccare
+     * @param i direzione di attacco
+     */
     public LabyNode(LabyNode n, int i){
         near = new LabyNode[4];
         wall = new char[4];
@@ -43,10 +66,20 @@ public class LabyNode {
         alls.add(this);
     }
 
+
+    /**
+     * metodo per ottenere la direzione opposta alla direzione indicata
+     */
     public static int getOpposite(int i){
         return (i+2)%4;
     }
 
+    /**
+     * metodo per settare il nodo adiacente in direzione i
+     * controlla se non era già settatto e lo risetta a vicenda
+     * @param n nodo da settare
+     * @param i direzione di settaggio
+     */
     public void setNear(LabyNode n, int i){
         if(near[i] == null){
             near[i] = n;
@@ -54,6 +87,14 @@ public class LabyNode {
         }
     }
 
+
+    /**
+     * setto un muro in una data direzione, se non è già stato settato
+     * setta anche quello del nodo vicino, se non c'è lo crea e lo aggiunge
+     * @param i direzione di settaggio
+     * @param wallo se c'è il muro o se è libero
+     * @param i direzione di settaggio
+     */
     public void setWall(boolean wallo, int i){
         if(wall[i] == 'u'){
             wall[i] = wallo?'w':'f';
@@ -61,8 +102,16 @@ public class LabyNode {
                 near[i] = new LabyNode(this, getOpposite(i));
                 insertNode(this, i, near[i]);
             }
+            near[i].setWall(wallo, getOpposite(i));
         }
     }
+
+    /**
+     * comme il metodo sopra, può settare direttamente un char, se c'è bisogno di settarlo a 'u',
+     * non ci dovrebbe esserne bisogno
+     * @param wallo
+     * @param i
+     */
     public void setWall(char wallo, int i){
         if(wall[i] == 'u'){
             wall[i] = wallo;
@@ -73,24 +122,34 @@ public class LabyNode {
         }
     }
 
+    /**
+     * aggiunge un nodo al grafo, controllo tra tutti i nodi asssociandoci una coordinata e
+     * controllando se sono adiacenti al nodo da aggiungere
+     * @param from nodo preesistente
+     * @param i direzione da from in cui va attaccato il nodo
+     * @param to nodo da aggiungere
+     */
     private static void insertNode(LabyNode from, int i, LabyNode to){
-        Queue<LabyNode> q = new java.util.LinkedList<LabyNode>();
-        Queue<Coor> n = new java.util.LinkedList<Coor>();
+        Queue<LabyNode> q = new java.util.LinkedList<LabyNode>();//queue per la bfs di nodi
+        Queue<Coor> n = new java.util.LinkedList<Coor>();//queue parallela di coordinate
 
         q.add(from);
-        n.add(Coor.ZERO.move(getOpposite(i)));
+        n.add(Coor.ZERO.move(getOpposite(i)));//la cella da aggiungere è la 0,0, così calcolo le coor della cella from
         from.setBfsFlag(true);
         to.setBfsFlag(true);
 
         LabyNode tmp;
 
+        //bfs per passare tutti nodi
         while(!q.isEmpty()){
             LabyNode cur = q.poll();
             Coor c = n.poll();
 
+            //aggiungo il collegamento
             if(c.isAdiacent(Coor.ZERO))
                 cur.setNear(to, getOpposite(Coor.ZERO.getDir(c)));
 
+            //aggiungo i nodi adiacenti alla queue
             for (int j = 0; j < 4; j++) {
                 tmp=cur.getNear(j);
                 if(tmp != null && !tmp.isBfsFlag()){
@@ -101,10 +160,18 @@ public class LabyNode {
             }
         }
 
+        //risetto tutti i flag della bfs a false
         for(LabyNode l : alls) l.setBfsFlag(false);
 
     }
 
+
+    /**
+     * cerco un percorso per una cella sconosciuta, la più vicina accessibile,
+     * prima crea una coda di coordinate per la cella sconosciuta, poi la converte in direzioni.
+     * fa una bsf, con coordinate parallele, e queue parallela di percorso di coordinate per la cella
+     * @return array di direzioni
+     */
     public int[] trackToUnkown() {
         Queue<LabyNode> nodeQueue = new java.util.LinkedList<LabyNode>();
         Queue<Coor> coorQueue = new java.util.LinkedList<Coor>();
@@ -123,16 +190,20 @@ public class LabyNode {
         LabyNode cur=this,tmp;
         Coor c;
 
+        //esce quando sono arrivato a un nodo mai visitato
         while(!nodeQueue.isEmpty() && cur.isVisited()){
             cur = nodeQueue.poll();
             c = coorQueue.poll();
             tmpCoor = tracksQueue.poll();
 
+            //passo tutti i nodi vicini alle cella corrente
             for (int j = 0; j < 4; j++) {
                 tmp=cur.getNear(j);
-                if(tmp != null && !tmp.isBfsFlag() && cur.getWall(j) == 'f'){
+                //controllo che la cella vicina sia accessibile(muro free), non già visitata in questa bfs, non pericoloda
+                //e esistente
+                if(tmp != null && !tmp.isBfsFlag() && cur.getWall(j) == 'f' && !tmp.isDanger()){
 
-                    tmpCoor2=new java.util.LinkedList<Coor>(tmpCoor);
+                    tmpCoor2=new java.util.LinkedList<Coor>(tmpCoor);//creo una copia della queue di coordinare e ci aggiungo la nuova coordinate
                     tmpCoor2.add(c.move(j));
                     tracksQueue.add(tmpCoor2);
                     nodeQueue.add(tmp);
@@ -142,15 +213,18 @@ public class LabyNode {
             }
         }
 
+        //risetto tutti i flag della bfs a false
         for(LabyNode l : alls) l.setBfsFlag(false);
 
 
+        //converto le coordinate in direzioni
+        //l'array out è di uno più piccolo, conto le direzioni tra le celle e sono una in meno del numero di celle
         int size = tmpCoor.size()-1;
         int[] out = new int[size];
 
 
-
         for (int i = 0; i < size; i++) {
+            //aggiungo la direzione del primo nodo per il secondo(tolgo il primo e poi controllo il nuovo promo senza toglierlo)
             c = tmpCoor.poll();
             out[i] = c.getDir(tmpCoor.peek());
         }
@@ -199,6 +273,14 @@ public class LabyNode {
     }
 
 
+    /**
+     * metodo fatto in modo molto casinoso, l'ho fatto in c++, ho incollato qui il codice e ho
+     * corretto gli errori. Sfoglia tutti i nodi, li mette in una lista con una lista parallela di coordinate,
+     * fa una matrice di char con le cella anche per i muri, la riempie con i muri(ascii extended, intellelij non mi fa vedere
+     * i box character che ho usato, in c++ andava) e lo converte in strinfa
+     * @param dir direzione del robot, per segnarlo nella mappa con una freccetta adeguata
+     * @return stringa rappresentativa della mappa
+     */
     public String toString(int dir){
             Queue<LabyNode> bfs = new java.util.LinkedList<LabyNode>();
             Queue<Coor> bfsC = new java.util.LinkedList<Coor>();

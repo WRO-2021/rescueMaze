@@ -2,6 +2,9 @@ package pacco;
 
 import java.util.Scanner;
 
+/**
+ * main di debug con testo e inserimento da linea di comando
+ */
 public class MainProva {
     public static String decodeDir(int in) {
         return switch (in) {

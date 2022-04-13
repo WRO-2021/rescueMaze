@@ -9,6 +9,21 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * main con rabbitmq, legge dalla coda Esplorazione, i mezzaggi devono cominciare con
+ * "Esplora:" , poi in base alla lettera dopo fa diverse cose:
+ * w set wall
+ * m do movements
+ * f flags
+ * u track to unknown cell
+ * controllare il codice per maggiori specifiche
+ * ci sono due argomenti da linea di comando:
+ * -h help
+ * -v verbose
+ *
+ * @author Samuele Facenda
+ * @mail samule.facenda@gmail.com
+ */
 public class MainCoso {
     public static boolean verbose = false;
     private static void send(String message, String queueName,String ipHost) throws Exception {
