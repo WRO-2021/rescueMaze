@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/labytinthRabbitQM.iml" filepath="$PROJECT_DIR$/labytinthRabbitQM.iml" />
+      <module fileurl="file://$PROJECT_DIR$/labytinthRabbitMQ.iml" filepath="$PROJECT_DIR$/labytinthRabbitMQ.iml" />
     </modules>
   </component>
 </project>

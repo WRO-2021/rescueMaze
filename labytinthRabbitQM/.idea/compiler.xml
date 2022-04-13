@@ -6,11 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="labytinthRabbitQM" />
+        <module name="labytinthRabbitMQ" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="labytinthRabbitQM" target="17" />
+      <module name="labytinthRabbitMQ" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>
