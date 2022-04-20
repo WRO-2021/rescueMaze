@@ -12,7 +12,7 @@ from math import *
 PASSI_LIDAR = 360.0
 # numero di punti esaminati dal
 
-CELLA = 30.0  # cm
+CELLA = 300.0  # mm
 
 VELOCITA_ROTAZIONE = 90.0  # grad/s
 
@@ -170,7 +170,7 @@ def check_turning(n_cell, precision, direction):
 
 
 # gira a destra(?) allineandosi con il lidar
-def turn():
+def turn(isRight):
     distances = get_lidar()
     walls = get_walls()
     wall_distances_in_cell = 0
@@ -186,12 +186,12 @@ def turn():
     precision = get_precision_cm(wall_distances_in_cell)
     time_to_80 = 80 / VELOCITA_ROTAZIONE
     start_turn_time = time.time()
-    start_turn()
+    start_turn(isRight)
     while time.time() - start_turn_time < time_to_80:
-        keep_turning()
+        keep_turning(isRight)
 
     # inizio a prendere le distanze per fermarmi al momento giusto
-    while check_turning(wall_distances_in_cell, precision, (wall_dir + 1) % 4):  # controllo con il muro a destra di 90
+    while check_turning(wall_distances_in_cell, precision, (wall_dir + 1 if isRight else -1) % 4):  # controllo con il muro a destra di 90
         # gradi, come se girasse da quella
-        keep_turning()
-    stop_turn()
+        keep_turning(isRight)
+    stop_turn(isRight)
