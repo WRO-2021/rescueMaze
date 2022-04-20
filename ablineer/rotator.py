@@ -12,7 +12,7 @@ from math import *
 import pika
 
 PASSI_LIDAR = 360.0
-# numero di punti esaminati dal
+# numero di punti esaminati dal lidar in un giro
 
 CELLA = 300.0  # mm
 
@@ -212,7 +212,7 @@ def turn(isRight):
         keep_turning(isRight)
 
     # inizio a prendere le distanze per fermarmi al momento giusto
-    while check_turning(wall_distances_in_cell, precision, (wall_dir + 1 if isRight else -1) % 4):  # controllo con il muro a destra di 90
+    while check_turning(wall_distances_in_cell, precision, (wall_dir + 1 if isRight else -1) % 4):  # controllo con il muro a destra/sinistra di 90
         # gradi, come se girasse da quella
         keep_turning(isRight)
     stop_turn()
