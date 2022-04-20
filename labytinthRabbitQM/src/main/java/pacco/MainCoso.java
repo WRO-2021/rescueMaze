@@ -26,21 +26,15 @@ import java.util.concurrent.atomic.AtomicReference;
  * @mail samule.facenda@gmail.com
  */
 public class MainCoso {
+
+    private static ConnectionFactory postman;
+    private static Connection connection;
+    private static Channel channel;
     public static boolean verbose = false;
     private static void send(String message, String queueName,String ipHost) throws Exception {
-        ConnectionFactory postman = new ConnectionFactory();
-        Connection connection = postman.newConnection("amqp://guest:guest@"+ipHost+":5672/");
-        Channel channel = connection.createChannel();
-        channel.queueDeclare(queueName, false, false, false, null);
         channel.basicPublish("", queueName, null, message.getBytes());
-        channel.close();
-        connection.close();
     }
     private static String receive(String queueName,String ipHost) throws IOException, TimeoutException {
-        ConnectionFactory postman = new ConnectionFactory();
-        Connection connection = postman.newConnection("amqp://guest:guest@"+ipHost+":5672/");
-        Channel channel = connection.createChannel();
-        channel.queueDeclare(queueName, false, false, false, null);
         if(verbose) System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         AtomicReference<String> message = null;
@@ -55,6 +49,11 @@ public class MainCoso {
 
 
     public static void main(String[] args) throws Exception {
+        String ipHost = "localhost",message,queueName="Esplorazione";
+        postman = new ConnectionFactory();
+        connection = postman.newConnection("amqp://guest:guest@"+ipHost+":5672/");
+        channel = connection.createChannel();
+        channel.queueDeclare("Esplorazione", false, false, false, null);
         for(String arg:args){
             if (arg.equals("-v"))
                 verbose = true;
@@ -66,8 +65,6 @@ public class MainCoso {
             }
         }
         Esploratore esploratore = new Esploratore();
-
-        String ipHost = "localhost",message,queueName="Esplorazione";
 
         while(true) {
             try{
