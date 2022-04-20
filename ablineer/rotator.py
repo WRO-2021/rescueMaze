@@ -22,7 +22,7 @@ SPEED = 100  # mm/s
 
 VELOCITA_ROTAZIONE = 360.0 / tempo_360_gradi  # gradi/secondo
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.229.211'))
+connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.229.211', 5672, '/', pika.PlainCredentials('guest', 'guest'), durable=False))
 lidar = connection.channel()
 lidar.queue_declare(queue='lidar')
 
