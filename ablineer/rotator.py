@@ -9,50 +9,71 @@ in più faccio tutto generico, niente destra e sinistra, poi va implementato tut
 import time
 from math import *
 
+import pika
+
 PASSI_LIDAR = 360.0
 # numero di punti esaminati dal
 
 CELLA = 300.0  # mm
 
-VELOCITA_ROTAZIONE = 90.0  # grad/s
+tempo_360_gradi = 3.90 #secondi
+
+VELOCITA_ROTAZIONE = 360.0 / tempo_360_gradi # gradi/secondo
+
+connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+lidar = connection.channel()
+lidar.queue_declare(queue='lidar')
+
+arduino = connection.channel()
+arduino.queue_declare(queue='arduino')
+
+global lidar_data
 
 
 def get_lidar():
-    return {}
+    def callback(ch, method, properties, body):
+        global lidar_data
+        lidar_data = body
+        print(" [x] Received %r" % body)
+    lidar.basic_consume(callback, queue='lidar', no_ack=True)
+    lidar.start_consuming()
+    return lidar_data.decode('utf-8').split(',')
 
 
 def start_move(move_forward):
     if move_forward:
-        # move forward
-        pass
+        arduino.basic_publish(exchange='', routing_key='arduino', body='8')
     else:
-        # move backward
-        pass
+        arduino.basic_publish(exchange='', routing_key='arduino', body='2')
 
 
 def keep_moving(move_forward):
     if move_forward:
-        # move forward
-        pass
+        arduino.basic_publish(exchange='', routing_key='arduino', body='8')
     else:
-        # move backward
-        pass
+        arduino.basic_publish(exchange='', routing_key='arduino', body='2')
 
 
 def stop_move():
-    pass
+    arduino.basic_publish(exchange='', routing_key='arduino', body='5')
 
 
 def start_turn(is_right):
-    pass
+    if is_right:
+        arduino.basic_publish(exchange='', routing_key='arduino', body='6')
+    else:
+        arduino.basic_publish(exchange='', routing_key='arduino', body='4')
 
 
 def keep_turning(is_right):
-    pass
+    if is_right:
+        arduino.basic_publish(exchange='', routing_key='arduino', body='6')
+    else:
+        arduino.basic_publish(exchange='', routing_key='arduino', body='4')
 
 
 def stop_turn():
-    pass
+    arduino.basic_publish(exchange='', routing_key='arduino', body='5')
 
 
 def mean(numbers):
