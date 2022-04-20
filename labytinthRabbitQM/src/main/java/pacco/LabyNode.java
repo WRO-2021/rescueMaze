@@ -1,7 +1,10 @@
 package pacco;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Queue;
+import java.util.function.Function;
 
 import static java.lang.Math.abs;
 
@@ -172,7 +175,7 @@ public class LabyNode {
      * fa una bsf, con coordinate parallele, e queue parallela di percorso di coordinate per la cella
      * @return array di direzioni
      */
-    public int[] trackToUnkown() {
+    public int[] trackTo(Function<LabyNode, Boolean> check) throws Exception{
         Queue<LabyNode> nodeQueue = new java.util.LinkedList<>();
         Queue<Coor> coorQueue = new java.util.LinkedList<>();
         Queue<Queue<Coor>> tracksQueue = new java.util.LinkedList<>();
@@ -191,7 +194,7 @@ public class LabyNode {
         Coor c;
 
         //esce quando sono arrivato a un nodo mai visitato
-        while(!nodeQueue.isEmpty() && cur.isVisited()){
+        while(!nodeQueue.isEmpty() && check.apply(cur)){
             cur = nodeQueue.poll();
             c = coorQueue.poll();
             tmpCoor = tracksQueue.poll();
@@ -212,6 +215,9 @@ public class LabyNode {
                 }
             }
         }
+
+        if(cur.isVisited())
+            throw new Exception("Il percorso non esiste");
 
         //risetto tutti i flag della bfs a false
         for(LabyNode l : alls) l.setBfsFlag(false);
@@ -410,5 +416,25 @@ public class LabyNode {
             return 'k';
         else
             return 'u';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LabyNode labyNode = (LabyNode) o;
+        return isDanger == labyNode.isDanger && isCheckpoint == labyNode.isCheckpoint && isVisited == labyNode.isVisited && bfsFlag == labyNode.bfsFlag && Arrays.equals(near, labyNode.near) && Arrays.equals(wall, labyNode.wall);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(isDanger, isCheckpoint, isVisited, bfsFlag);
+        result = 31 * result + Arrays.hashCode(near);
+        result = 31 * result + Arrays.hashCode(wall);
+        return result;
+    }
+
+    public boolean isNotStart(){
+        return !this.equals(Esploratore.start);
     }
 }

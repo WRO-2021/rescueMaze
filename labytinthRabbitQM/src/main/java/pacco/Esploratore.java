@@ -15,8 +15,11 @@ public class Esploratore {
     private LabyNode lastCheckpoint;
     private int direction;
 
+    protected static LabyNode start=null;
+
     public Esploratore(){
         current=new LabyNode();
+        start=current;
         lastCheckpoint=current;
         direction=0;
     }
@@ -72,8 +75,19 @@ public class Esploratore {
             current.getNear(direction).setDanger(true);
     }
     public int[] getMovements(){
-        int[] raw=current.trackToUnkown();
-        int last=direction,tmp;
+        int[] raw = new int[0];
+        try {
+            raw = current.trackTo(LabyNode::isVisited);
+            if(raw==null || raw.length==0)
+                throw new Exception("no path");
+        }catch (Exception e){
+            try{
+                raw = current.trackTo(LabyNode::isNotStart);
+            }catch (Exception e1){
+                System.exit(0);
+            }
+        }
+        int last=direction, tmp;
         LinkedList<Integer> movements=new LinkedList<>();
         //in base all'ultima direzione calcola il movimento da fare per ogni direzione
         for (int j : raw) {
@@ -89,4 +103,5 @@ public class Esploratore {
     public String toString(){
         return "current direction:"+direction+"\n"+ current.toString(direction);
     }
+
 }
