@@ -16,64 +16,69 @@ PASSI_LIDAR = 360.0
 
 CELLA = 300.0  # mm
 
-tempo_360_gradi = 3.90 #secondi
+tempo_360_gradi = 3.90  # secondi
 
-VELOCITA_ROTAZIONE = 360.0 / tempo_360_gradi # gradi/secondo
+SPEED = 100  # mm/s
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+VELOCITA_ROTAZIONE = 360.0 / tempo_360_gradi  # gradi/secondo
+
+connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.229.211'))
 lidar = connection.channel()
 lidar.queue_declare(queue='lidar')
 
 arduino = connection.channel()
 arduino.queue_declare(queue='arduino')
 
-global lidar_data
+explo = connection.channel()
+explo.queue_declare(queue='Esplorazione')
 
+global lidar_data
 
 def get_lidar():
     def callback(ch, method, properties, body):
         global lidar_data
         lidar_data = body
         print(" [x] Received %r" % body)
-    lidar.basic_consume(callback, queue='lidar', no_ack=True)
+
+    lidar.basic_consume(on_message_callback=callback, queue='lidar', auto_ack=True)
     lidar.start_consuming()
     return lidar_data.decode('utf-8').split(',')
 
 
 def start_move(move_forward):
     if move_forward:
-        arduino.basic_publish(exchange='', routing_key='arduino', body='8')
+        arduino.basic_publish(exchange='', routing_key='arduino', body=b'8')
     else:
-        arduino.basic_publish(exchange='', routing_key='arduino', body='2')
+        arduino.basic_publish(exchange='', routing_key='arduino', body=b'2')
 
 
 def keep_moving(move_forward):
     if move_forward:
-        arduino.basic_publish(exchange='', routing_key='arduino', body='8')
+        arduino.basic_publish(exchange='', routing_key='arduino', body=b'8')
     else:
-        arduino.basic_publish(exchange='', routing_key='arduino', body='2')
+        arduino.basic_publish(exchange='', routing_key='arduino', body=b'2')
 
 
 def stop_move():
-    arduino.basic_publish(exchange='', routing_key='arduino', body='5')
+    arduino.basic_publish(exchange='', routing_key='arduino', body=b'5')
 
 
 def start_turn(is_right):
     if is_right:
-        arduino.basic_publish(exchange='', routing_key='arduino', body='6')
+        arduino.basic_publish(exchange='', routing_key='arduino', body=b'6')
     else:
-        arduino.basic_publish(exchange='', routing_key='arduino', body='4')
+        arduino.basic_publish(exchange='', routing_key='arduino', body=b'4')
 
 
 def keep_turning(is_right):
     if is_right:
-        arduino.basic_publish(exchange='', routing_key='arduino', body='6')
+        arduino.basic_publish(exchange='', routing_key='arduino', body=b'6')
     else:
-        arduino.basic_publish(exchange='', routing_key='arduino', body='4')
+        arduino.basic_publish(exchange='', routing_key='arduino', body=b'4')
 
 
 def stop_turn():
-    arduino.basic_publish(exchange='', routing_key='arduino', body='5')
+    arduino.basic_publish(exchange='', routing_key='arduino', body=b'5')
 
 
 def mean(numbers):
@@ -156,7 +161,7 @@ def center_robot():
     def continue_cycle():
         forw = get_dist_mod(distances, True)
         back = get_dist_mod(distances, False)
-        return not forw > back ^ is_greater_forward # nxor, quando non varia il valore continua il ciclo
+        return not forw > back ^ is_greater_forward  # nxor, quando non varia il valore continua il ciclo
 
     start_move(is_greater_forward)
     while continue_cycle():
@@ -183,8 +188,8 @@ def get_grad_dista_cell(n_cell):
 # con la giusta precisione
 def check_turning(n_cell, precision, direction):
     distances = get_lidar()
-    angulus = get_grad_dista_cell(n_cell) / 2 * pi * 360 # angolo in gradi
-    angulus *= 0.9 # diminuisco un po' per prendere i muri di sicuro nella misura
+    angulus = get_grad_dista_cell(n_cell) / 2 * pi * 360  # angolo in gradi
+    angulus *= 0.9  # diminuisco un po' per prendere i muri di sicuro nella misura
     # conronto i valori delle distanze nelle direzioni simmetriche, con scarto appena calcolato
     difference = get_int_grad(90 * direction + angulus, distances) - get_int_grad(90 * direction - angulus, distances)
     return abs(difference) < precision
@@ -212,7 +217,49 @@ def turn(isRight):
         keep_turning(isRight)
 
     # inizio a prendere le distanze per fermarmi al momento giusto
-    while check_turning(wall_distances_in_cell, precision, (wall_dir + 1 if isRight else -1) % 4):  # controllo con il muro a destra/sinistra di 90
+    while check_turning(wall_distances_in_cell, precision,
+                        (wall_dir + 1 if isRight else -1) % 4):  # controllo con il muro a destra/sinistra di 90
         # gradi, come se girasse da quella
         keep_turning(isRight)
     stop_turn()
+
+
+def sendWall(wall, direction):
+    for i in range(4):
+        explo.basic_publish(exchange='', routing_key='wall',
+                            body=b"Esplora:" + bytes(str(i)) + (b"1" if wall[i] < CELLA else b"0"))
+
+
+def getTrack():
+    def callback(ch, method, properties, body):
+        global track
+        track = body
+        print(" [x] Received %r" % body)
+
+    lidar.basic_consume(on_message_callback=callback, queue='Esploratore', auto_ack=True)
+    lidar.start_consuming()
+    return lidar_data.decode('utf-8').split(',')
+
+
+def one_cell():
+    start_time = time.time()
+    start_move(True)
+    while time.time() - start_time < CELLA / SPEED:
+        keep_moving(True)
+    stop_move()
+    center_robot()
+
+
+while True:
+    walls = get_walls()
+    track = getTrack()
+    for moves in track:
+        if moves == "0":
+            one_cell()
+        elif moves == "1":
+            turn(True)
+        elif moves == "2":
+            turn(False)
+            turn(False)
+        elif moves == "3":
+            turn(False)
