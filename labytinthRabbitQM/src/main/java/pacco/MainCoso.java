@@ -62,9 +62,30 @@ public class MainCoso {
                 System.out.println("-v: verbose mode");
                 System.out.println("-h: help");
                 System.exit(0);
+                channel.close();
+                connection.close();
             }
         }
         Esploratore esploratore = new Esploratore();
+
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+                    Thread.sleep(200);
+                    System.out.println("Shutting down ...");
+                    channel.close();
+                    connection.close();
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    e.printStackTrace();
+                } catch (IOException | TimeoutException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
 
         while(true) {
             try{
@@ -103,6 +124,7 @@ public class MainCoso {
                 if(verbose) System.out.println("Errore di connessione");   //se non riesce a connettersi al broker
             }
         }
+
 
 
     }
