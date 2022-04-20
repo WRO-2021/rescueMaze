@@ -89,11 +89,15 @@ public class MainCoso {
                             }
                             send(U_string, queueName,ipHost);
                         case "f"://flags, qualcosa con le flag
-                            switch (message.substring(9)) {
-                                case "d" -> esploratore.setDanger(5);
-                                case "c" -> esploratore.setLastCheckpoint();
-                                case "g" -> esploratore.goToCheckpoint();
+                            switch (message.charAt(9)) {
+                                case 'd' -> esploratore.setDanger(5);
+                                case 'c' -> esploratore.setLastCheckpoint();
+                                case 'g' -> esploratore.goToCheckpoint();
                             }
+                            break;
+                        case "w"://wall
+                            esploratore.setWall(Integer.parseInt(message.substring(9,10)),message.charAt(10)=='1');
+                            break;
                     }
                 }
                 if(verbose) System.out.println(esploratore);

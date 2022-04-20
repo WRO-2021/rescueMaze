@@ -38,7 +38,7 @@ def get_lidar():
     def callback(ch, method, properties, body):
         global lidar_data
         lidar_data = body
-        print(" [x] Received %r" % body)
+        #print(" [x] Received %r" % body)
 
     lidar.basic_consume(on_message_callback=callback, queue='lidar', auto_ack=True)
     lidar.start_consuming()
