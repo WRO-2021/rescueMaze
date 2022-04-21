@@ -89,35 +89,41 @@ public class MainCoso {
 
         while(true) {
             try{
-                message = receive(queueName,ipHost);
-                System.out.println("message: "+message);
-                if(message.startsWith("Esplora:")) {
-                    switch (message.substring(8)) {
-                        case "m"://movements
-                            switch (message.substring(9)) {
-                                case "1" -> esploratore.right();
-                                case "0" -> esploratore.forward();
-                                case "3" -> esploratore.left();
-                                case "2" -> esploratore.back();
-                            }
-                        case "u"://unknown, track to U
-                            int[] U = esploratore.getMovements();
-                            String U_string = "";
-                            for (int j : U) {
-                                U_string += j;
-                                U_string += ",";
-                            }
-                            send(U_string, queueName,ipHost);
-                        case "f"://flags, qualcosa con le flag
-                            switch (message.charAt(9)) {
-                                case 'd' -> esploratore.setDanger(5);
-                                case 'c' -> esploratore.setLastCheckpoint();
-                                case 'g' -> esploratore.goToCheckpoint();
-                            }
-                            break;
-                        case "w"://wall
-                            esploratore.setWall(Integer.parseInt(message.substring(9,10)),message.charAt(10)=='1');
-                            break;
+                try{
+                    message = receive(queueName, ipHost);
+                }catch(TimeoutException e){
+                    message = null;
+                }
+                if(message!=null && !message.equals("")){
+                    System.out.println("message: " + message);
+                    if (message.startsWith("Esplora:")) {
+                        switch (message.substring(8)) {
+                            case "m"://movements
+                                switch (message.substring(9)) {
+                                    case "1" -> esploratore.right();
+                                    case "0" -> esploratore.forward();
+                                    case "3" -> esploratore.left();
+                                    case "2" -> esploratore.back();
+                                }
+                            case "u"://unknown, track to U
+                                int[] U = esploratore.getMovements();
+                                String U_string = "";
+                                for (int j : U) {
+                                    U_string += j;
+                                    U_string += ",";
+                                }
+                                send(U_string, queueName, ipHost);
+                            case "f"://flags, qualcosa con le flag
+                                switch (message.charAt(9)) {
+                                    case 'd' -> esploratore.setDanger(5);
+                                    case 'c' -> esploratore.setLastCheckpoint();
+                                    case 'g' -> esploratore.goToCheckpoint();
+                                }
+                                break;
+                            case "w"://wall
+                                esploratore.setWall(Integer.parseInt(message.substring(9, 10)), message.charAt(10) == '1');
+                                break;
+                        }
                     }
                 }
                 if(verbose) System.out.println(esploratore);
