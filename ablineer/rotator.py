@@ -11,7 +11,7 @@ from math import *
 
 import pika
 
-PASSI_LIDAR = 360.0
+PASSI_LIDAR = 359.0
 # numero di punti esaminati dal lidar in un giro
 
 CELLA = 300.0  # mm
