@@ -53,7 +53,7 @@ public class MainCoso {
         postman = new ConnectionFactory();
         connection = postman.newConnection("amqp://guest:guest@"+ipHost+":15672/");
         channel = connection.createChannel();
-        channel.queueDeclare("Esplorazione", true, false, false, null);
+        channel.queueDeclare("Esplorazione", false, false, false, null);
         for(String arg:args){
             if (arg.equals("-v"))
                 verbose = true;

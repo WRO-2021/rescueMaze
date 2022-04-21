@@ -24,13 +24,13 @@ VELOCITA_ROTAZIONE = 360.0 / tempo_360_gradi  # gradi/secondo
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 lidar = connection.channel()
-lidar.queue_declare(queue='lidar', durable=True, exclusive=False, auto_delete=False, arguments=None)
+lidar.queue_declare(queue='lidar', durable=False, exclusive=False, auto_delete=False, arguments=None)
 
 arduino = connection.channel()
-arduino.queue_declare(queue='arduino', durable=True, exclusive=False, auto_delete=False, arguments=None)
+arduino.queue_declare(queue='arduino', durable=False, exclusive=False, auto_delete=False, arguments=None)
 
 explo = connection.channel()
-explo.queue_declare(queue='Esplorazione', durable=True, exclusive=False, auto_delete=False, arguments=None)
+explo.queue_declare(queue='Esplorazione', durable=False, exclusive=False, auto_delete=False, arguments=None)
 
 global lidar_data
 
