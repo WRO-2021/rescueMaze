@@ -35,15 +35,15 @@ public class MainCoso {
         channel.basicPublish("", queueName, null, message.getBytes());
     }
     private static String receive(String queueName,String ipHost) throws IOException, TimeoutException {
-        if(verbose) System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+        //if(verbose) System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
-        AtomicReference<String> message = new AtomicReference<>();
+        final String[] message = new String[1];
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            message.set(new String(delivery.getBody(), StandardCharsets.UTF_8));
-            if(verbose) System.out.println(" [x] Received '" + message + "'");
+            message[0] =new String(delivery.getBody(), "UTF-8");
+            if(verbose && !message[0].equals("")) System.out.println(" [x] Received '" + message[0] + "'");
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
-        return message.get();
+        return message[0];
     }
 
 
@@ -91,6 +91,7 @@ public class MainCoso {
             try{
                 try{
                     message = receive(queueName, ipHost);
+                    System.out.println(message);
                 }catch(TimeoutException e){
                     message = null;
                 }
@@ -125,8 +126,9 @@ public class MainCoso {
                                 break;
                         }
                     }
+                    if(verbose) System.out.println(esploratore);
                 }
-                if(verbose) System.out.println(esploratore);
+
 
             }catch (Exception e){
                 if(verbose) System.out.println("Errore: "+e.getMessage());
