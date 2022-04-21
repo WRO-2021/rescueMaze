@@ -90,6 +90,7 @@ public class MainCoso {
         while(true) {
             try{
                 message = receive(queueName,ipHost);
+                System.out.println("message: "+message);
                 if(message.startsWith("Esplora:")) {
                     switch (message.substring(8)) {
                         case "m"://movements
@@ -122,6 +123,7 @@ public class MainCoso {
                 if(verbose) System.out.println(esploratore);
 
             }catch (Exception e){
+                if(verbose) System.out.println("Errore: "+e.getMessage());
                 if(verbose) System.out.println("Errore di connessione"+message);   //se non riesce a connettersi al broker
             }
         }
