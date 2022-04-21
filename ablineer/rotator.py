@@ -24,7 +24,7 @@ VELOCITA_ROTAZIONE = 360.0 / tempo_360_gradi  # gradi/secondo
 
 connection = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1'))
 lidar = connection.channel()
-lidar.queue_declare(queue='lidar')
+lidar.queue_declare(queue='lidar',durable=False)
 
 arduino = connection.channel()
 arduino.queue_declare(queue='arduino')
