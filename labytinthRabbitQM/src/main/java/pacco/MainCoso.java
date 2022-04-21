@@ -49,11 +49,11 @@ public class MainCoso {
 
 
     public static void main(String[] args) throws Exception {
-        String ipHost = "localhost",message = null,queueName="Esplorazione";
+        String ipHost = "127.0.0.1",message = null,queueName="Esplorazione";
         postman = new ConnectionFactory();
         connection = postman.newConnection("amqp://guest:guest@"+ipHost+":15672/");
         channel = connection.createChannel();
-        channel.queueDeclare("Esplorazione", false, false, false, null);
+        channel.queueDeclare("Esplorazione", true, false, false, null);
         for(String arg:args){
             if (arg.equals("-v"))
                 verbose = true;
