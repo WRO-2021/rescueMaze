@@ -37,7 +37,7 @@ public class MainCoso {
     private static String receive(String queueName,String ipHost) throws IOException, TimeoutException {
         if(verbose) System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
-        AtomicReference<String> message = null;
+        AtomicReference<String> message = new AtomicReference<>();
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             message.set(new String(delivery.getBody(), StandardCharsets.UTF_8));
             if(verbose) System.out.println(" [x] Received '" + message + "'");
