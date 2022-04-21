@@ -22,7 +22,7 @@ SPEED = 100  # mm/s
 
 VELOCITA_ROTAZIONE = 360.0 / tempo_360_gradi  # gradi/secondo
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.229.211'))
+connection = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1'))
 lidar = connection.channel()
 lidar.queue_declare(queue='lidar')
 
@@ -34,11 +34,12 @@ explo.queue_declare(queue='Esplorazione')
 
 global lidar_data
 
+
 def get_lidar():
     def callback(ch, method, properties, body):
         global lidar_data
         lidar_data = body
-        #print(" [x] Received %r" % body)
+        # print(" [x] Received %r" % body)
 
     lidar.basic_consume(on_message_callback=callback, queue='lidar', auto_ack=True)
     lidar.start_consuming()
@@ -251,7 +252,7 @@ def one_cell():
 
 
 def send_moves(direction):
-    explo.basic_publish(exchange='',routing_key='Esplorazione',body=b"Espora:m"+bytes(str(direction)))
+    explo.basic_publish(exchange='', routing_key='Esplorazione', body=b"Espora:m" + bytes(str(direction)))
 
 
 while True:
