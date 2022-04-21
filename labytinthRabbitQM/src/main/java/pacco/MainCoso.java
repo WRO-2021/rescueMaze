@@ -49,7 +49,7 @@ public class MainCoso {
 
 
     public static void main(String[] args) throws Exception {
-        String ipHost = "localhost",message,queueName="Esplorazione";
+        String ipHost = "localhost",message = null,queueName="Esplorazione";
         postman = new ConnectionFactory();
         connection = postman.newConnection("amqp://guest:guest@"+ipHost+":5672/");
         channel = connection.createChannel();
@@ -122,7 +122,7 @@ public class MainCoso {
                 if(verbose) System.out.println(esploratore);
 
             }catch (Exception e){
-                if(verbose) System.out.println("Errore di connessione");   //se non riesce a connettersi al broker
+                if(verbose) System.out.println("Errore di connessione"+message);   //se non riesce a connettersi al broker
             }
         }
 
