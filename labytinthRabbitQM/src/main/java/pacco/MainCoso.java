@@ -96,7 +96,8 @@ public class MainCoso {
                             switch (message.substring(9)) {
                                 case "1" -> esploratore.right();
                                 case "0" -> esploratore.forward();
-                                case "2" -> esploratore.left();
+                                case "3" -> esploratore.left();
+                                case "2" -> esploratore.back();
                             }
                         case "u"://unknown, track to U
                             int[] U = esploratore.getMovements();

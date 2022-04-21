@@ -226,7 +226,7 @@ def turn(isRight):
 
 def sendWall(wall, direction):
     for i in range(4):
-        explo.basic_publish(exchange='', routing_key='wall',
+        explo.basic_publish(exchange='', routing_key='Esplorazione',
                             body=b"Esplora:" + bytes(str(i)) + (b"1" if wall[i] < CELLA else b"0"))
 
 
@@ -248,6 +248,10 @@ def one_cell():
         keep_moving(True)
     stop_move()
     center_robot()
+
+
+def send_moves(direction):
+    explo.basic_publish(exchange='',routing_key='Esplorazione',body=b"Espora:m"+bytes(str(direction)))
 
 
 while True:
