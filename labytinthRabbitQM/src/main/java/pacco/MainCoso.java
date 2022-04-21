@@ -51,7 +51,7 @@ public class MainCoso {
     public static void main(String[] args) throws Exception {
         String ipHost = "localhost",message = null,queueName="Esplorazione";
         postman = new ConnectionFactory();
-        connection = postman.newConnection("amqp://guest:guest@"+ipHost+":5672/");
+        connection = postman.newConnection("amqp://guest:guest@"+ipHost+":15672/");
         channel = connection.createChannel();
         channel.queueDeclare("Esplorazione", false, false, false, null);
         for(String arg:args){
