@@ -53,6 +53,9 @@ public class MainCoso {
     }
 
     private static void messageCallback(String consumerTag, Delivery delivery) {
+
+        recive();
+
         String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
         if(!message.equals("")){
             System.out.println("message: " + message);
@@ -91,8 +94,6 @@ public class MainCoso {
             }
             if(verbose) System.out.println(esploratore);
         }
-
-        recive();
 
     }
 
