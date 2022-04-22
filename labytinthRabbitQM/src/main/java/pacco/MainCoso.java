@@ -1,9 +1,6 @@
 package pacco;
 
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,25 +28,75 @@ public class MainCoso {
     private static Connection connection;
     private static Channel channel;
     public static boolean verbose = false;
-    private static void send(String message, String queueName,String ipHost) throws Exception {
+
+    private static final String queueName = "Esplorazione", ipHost = "127.0.0.1";
+
+    private static Esploratore esploratore;
+    private static void send(String message) throws Exception {
         channel.basicPublish("", queueName, null, message.getBytes());
     }
-    private static String receive(String queueName,String ipHost) throws IOException, TimeoutException {
+    private static void receive() throws IOException, TimeoutException {
         //if(verbose) System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
-        final String[] message = new String[1];
-        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            message[0] =new String(delivery.getBody(), "UTF-8");
-            if(verbose && !message[0].equals("")) System.out.println(" [x] Received '" + message[0] + "'");
-        };
+        DeliverCallback deliverCallback = MainCoso::messageCallback;
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
-        return message[0];
     }
 
+    private static void recive(){
+        try{
+            receive();
+        }catch (TimeoutException e){
+            recive();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private static void messageCallback(String consumerTag, Delivery delivery) {
+        String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
+        if(!message.equals("")){
+            System.out.println("message: " + message);
+            if (message.startsWith("Esplora:")) {
+                switch (message.substring(8)) {
+                    case "m"://movements
+                        switch (message.substring(9)) {
+                            case "1" -> esploratore.right();
+                            case "0" -> esploratore.forward();
+                            case "3" -> esploratore.left();
+                            case "2" -> esploratore.back();
+                        }
+                    case "u"://unknown, track to U
+                        int[] U = esploratore.getMovements();
+                        String U_string = "";
+                        for (int j : U) {
+                            U_string += j;
+                            U_string += ",";
+                        }
+                        try {
+                            send(U_string);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    case "f"://flags, qualcosa con le flag
+                        switch (message.charAt(9)) {
+                            case 'd' -> esploratore.setDanger(5);
+                            case 'c' -> esploratore.setLastCheckpoint();
+                            case 'g' -> esploratore.goToCheckpoint();
+                        }
+                        break;
+                    case "w"://wall
+                        esploratore.setWall(Integer.parseInt(message.substring(9, 10)), message.charAt(10) == '1');
+                        break;
+                }
+            }
+            if(verbose) System.out.println(esploratore);
+        }
+
+        recive();
+
+    }
 
     public static void main(String[] args) throws Exception {
-        String ipHost = "127.0.0.1",message = null,queueName="Esplorazione";
         postman = new ConnectionFactory();
         connection = postman.newConnection("amqp://guest:guest@"+ipHost+":15672/");
         channel = connection.createChannel();
@@ -66,7 +113,7 @@ public class MainCoso {
                 connection.close();
             }
         }
-        Esploratore esploratore = new Esploratore();
+        esploratore = new Esploratore();
 
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -86,57 +133,7 @@ public class MainCoso {
             }
         });
 
-
-        while(true) {
-            try{
-                try{
-                    message = receive(queueName, ipHost);
-                    System.out.println(message);
-                }catch(TimeoutException e){
-                    message = null;
-                }
-                if(message!=null && !message.equals("")){
-                    System.out.println("message: " + message);
-                    if (message.startsWith("Esplora:")) {
-                        switch (message.substring(8)) {
-                            case "m"://movements
-                                switch (message.substring(9)) {
-                                    case "1" -> esploratore.right();
-                                    case "0" -> esploratore.forward();
-                                    case "3" -> esploratore.left();
-                                    case "2" -> esploratore.back();
-                                }
-                            case "u"://unknown, track to U
-                                int[] U = esploratore.getMovements();
-                                String U_string = "";
-                                for (int j : U) {
-                                    U_string += j;
-                                    U_string += ",";
-                                }
-                                send(U_string, queueName, ipHost);
-                            case "f"://flags, qualcosa con le flag
-                                switch (message.charAt(9)) {
-                                    case 'd' -> esploratore.setDanger(5);
-                                    case 'c' -> esploratore.setLastCheckpoint();
-                                    case 'g' -> esploratore.goToCheckpoint();
-                                }
-                                break;
-                            case "w"://wall
-                                esploratore.setWall(Integer.parseInt(message.substring(9, 10)), message.charAt(10) == '1');
-                                break;
-                        }
-                    }
-                    if(verbose) System.out.println(esploratore);
-                }
-
-
-            }catch (Exception e){
-                if(verbose) System.out.println("Errore: "+e.getMessage());
-                if(verbose) System.out.println("Errore di connessione"+message);   //se non riesce a connettersi al broker
-            }
-        }
-
-
+        recive();
 
     }
 }
