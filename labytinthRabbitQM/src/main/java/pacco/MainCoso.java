@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * -v verbose
  *
  * @author Samuele Facenda
- * @mail samule.facenda@gmail.com
+ * @mail samuele.facenda@gmail.com
  */
 public class MainCoso {
 
@@ -60,7 +60,7 @@ public class MainCoso {
         if(!message.equals("")){
             System.out.println("message: " + message);
             if (message.startsWith("Esplora:")) {
-                switch (message.substring(8)) {
+                switch (message.substring(8,9)) {
                     case "m"://movements
                         switch (message.substring(9)) {
                             case "1" -> esploratore.right();
@@ -75,8 +75,15 @@ public class MainCoso {
                             U_string += j;
                             U_string += ",";
                         }
+                        if(verbose) System.out.println("U: " + U_string);
                         try {
+                            try{
+                                U_string = U_string.substring(0, U_string.length() - 1);
+                            }catch (Exception e){
+                                U_string = "";
+                            }
                             send(U_string);
+                            System.out.println("U sent");
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }

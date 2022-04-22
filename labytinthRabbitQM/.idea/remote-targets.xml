@@ -5,7 +5,7 @@
       <target name="pi@10.7.0.5:22" type="ssh/sftp" uuid="6db14974-dce9-4e44-ba9d-9f96981fca02">
         <config>
           <option name="projectRootOnTarget" value="/home/pi/remoteSamu/labytinthRabbitQM" />
-          <option name="serverName" value="pi@10.7.0.5:22 password" />
+          <option name="serverName" value="pi@10.7.0.14:22 password" />
         </config>
         <ContributedStateBase type="JavaLanguageRuntime">
           <config>
