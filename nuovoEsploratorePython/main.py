@@ -219,6 +219,7 @@ class MapNode:
         x_len = (max_x - min_x + 1) * 2 + 1
         y_len = (max_y - min_y + 1) * 2 + 1
         griglia = [' ' * x_len] * y_len
+        griglia = list(list(' ' for i in range(x_len)) for e in range(y_len))
 
         delta_x = min_x * -2
         delta_y = min_y * -2
@@ -360,3 +361,47 @@ class Explorator:
         elif is_wall is list or is_wall is tuple:
             for i in range(4):
                 self.current.addWall(self.dir_abs(i), 'w' if is_wall[i] else 'f')
+
+
+def decodeDir(i):
+    if i == 0:
+        return 'davanti'
+    elif i == 1:
+        return 'a destra'
+    elif i == 2:
+        return 'indietro'
+    elif i == 3:
+        return 'a sinistra'
+
+
+def main():
+    lb = Explorator()
+    while True:
+        print(str(lb))
+        choose = input(
+            "\ninserire la propria scelta:\n0: set muri\n1: set flag\n2: go to checkpoint\n3: go tu unk\n4: esci\n")
+        if choose == '0':
+            for i in range(4):
+                print("inserire muro " + decodeDir(i) + ": ")
+                tmp = input()
+                lb.set_wall(0 != tmp, i)
+        elif choose == 1:
+            f = input('inserire flag')
+            if f == 'd':
+                lb.set_danger(0)
+            elif f == 'd':
+                lb.set_danger(-1)
+            elif f == 'c':
+                lb.set_checkpoint()
+            else:
+                print('flag non riconosciuto')
+        elif choose == 2:
+            lb.move_to_last_checkpoint()
+        elif choose == 3:
+            track = lb.get_movements()
+            print("Percorso per cella sconosciuta: \nlen: " + len(track) + "\n" + str(track))
+            for move in track:
+                lb.move(move)
+
+
+main()
