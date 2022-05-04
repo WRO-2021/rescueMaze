@@ -174,6 +174,9 @@ class MapNode:
                     tmp_track.put(tmp.coor)
                     tracks_queue.put(tmp_track)
 
+        for node in MapNode.alls:
+            node.bfs = False
+
         if not condition(current_node):
             return None  # se la bfs si è conclusa senza trovare la condizione in nessuna cella
         else:
@@ -219,7 +222,7 @@ class MapNode:
         x_len = (max_x - min_x + 1) * 2 + 1
         y_len = (max_y - min_y + 1) * 2 + 1
         griglia = [' ' * x_len] * y_len
-        griglia = list(list(' ' for i in range(x_len)) for e in range(y_len))
+        griglia = list(list(' ' for i in range(x_len)) for _ in range(y_len))
 
         delta_x = min_x * -2
         delta_y = min_y * -2
@@ -382,9 +385,9 @@ def main():
             "\ninserire la propria scelta:\n0: set muri\n1: set flag\n2: go to checkpoint\n3: go tu unk\n4: esci\n")
         if choose == '0':
             for i in range(4):
-                print("inserire muro " + decodeDir(i) + ": ")
-                tmp = input()
-                lb.set_wall(0 != tmp, i)
+                tmp = input("inserire muro " + decodeDir(i) + ": ")
+                lb.set_wall(0 != int(tmp), i)
+                print(str(lb))
         elif choose == 1:
             f = input('inserire flag')
             if f == 'd':
