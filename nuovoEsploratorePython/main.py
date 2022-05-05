@@ -1,4 +1,4 @@
-import queue
+from collections import deque
 from typing import List
 
 """
@@ -54,7 +54,7 @@ class Coor:
     # funziona ammettendo che le celle siano adiacenti, ritorna la direzione della cella other rispetto a self
     def getDirection(self, other):
         if self.x == other.x:
-            if self.y > other.y:
+            if self.y < other.y:
                 return 0
             else:
                 return 2
@@ -91,6 +91,9 @@ class Coor:
     @staticmethod
     def opposite(direction):
         return (direction + 2) % 4
+
+    def __str__(self):
+        return "(" + str(self.x) + "," + str(self.y) + ")"
 
 
 """
@@ -136,7 +139,7 @@ class MapNode:
     def insertNode(nuovo):
         for node in MapNode.alls:
             if node.coor.isAdiacent(nuovo.coor):
-                node.addNeighbor(nuovo.coor.getDirection(node.coor), nuovo)
+                node.addNeighbor(node.coor.getDirection(nuovo.coor), nuovo)
                 # faccio così e non l'opposto così si scambiano le informazioni sul muro in mezzo
 
     def track_to(self, condition):
@@ -146,33 +149,33 @@ class MapNode:
 
         # bfs(breadth first search)
         self.bfs = True  # flag isExplored
-        current_track = queue.Queue()  # queue di coordinate
-        current_track.put(self.coor)
+        current_track = deque()  # queue di coordinate
+        current_track.appendleft(self.coor)
         current_node = self
 
         # queue di nodi per la bfs
-        nodes_queue = queue.Queue()
-        nodes_queue.put(current_node)
+        nodes_queue = deque()
+        nodes_queue.appendleft(current_node)
 
         # queue parallela di tracks
-        tracks_queue = queue.Queue()
-        tracks_queue.put(current_track)
+        tracks_queue = deque()
+        tracks_queue.appendleft(current_track)
 
         # continua finchè o non finiscono i nodi o ho raggiunto una cella che soddisfa la condizione
-        while not nodes_queue.empty() and not condition(current_node):
-            current_node = nodes_queue.get()
-            current_track = tracks_queue.get()
+        while nodes_queue and not condition(current_node):
+            current_node = nodes_queue.pop()
+            current_track = tracks_queue.pop()
 
             # aggiungo i nodi vicini, non devono essere danger, già passati nella bfe e il muro debe essere free
             for i in range(4):
                 tmp = current_node.getNeighbor(i)
                 if tmp is not None and not tmp.bfs and not tmp.isDanger and current_node.walls[i] == 'f':
                     tmp.bfs = True
-                    nodes_queue.put(tmp)
+                    nodes_queue.appendleft(tmp)
 
-                    tmp_track = queue.Queue(current_track)
-                    tmp_track.put(tmp.coor)
-                    tracks_queue.put(tmp_track)
+                    tmp_track = current_track.copy()
+                    tmp_track.appendleft(tmp.coor)
+                    tracks_queue.appendleft(tmp_track)
 
         for node in MapNode.alls:
             node.bfs = False
@@ -186,9 +189,8 @@ class MapNode:
     # iniziale. Il percorso è ritornato come lista di coordinate assolute(0 nord, 1 est...)
     def get_track_to_unknown(self):
 
-        track = self.track_to(lambda x: not x.visited)
+        track = self.track_to(lambda x: not x.isVisited)
         # cerco una cella non visitata
-
         # controllo che sia stata trovata una cella non visitata
         if track is None:
             track = self.track_to(lambda x: x.coor.x == 0 and x.coor.y == 0)
@@ -197,9 +199,9 @@ class MapNode:
 
         # converto le coordinate in direzioni per la coordinata dopo
         out = []
-        while not track.qsize() == 1:
-            tmp_coor = track.get()
-            out.append(tmp_coor.getDirection(track[0]))
+        while not len(track) == 1:
+            tmp_coor = track.pop()
+            out.append(tmp_coor.getDirection(track[-1]))
         return out
 
     # stapa il labirinto, non è bello come metodo
@@ -252,19 +254,14 @@ class MapNode:
             elif node.isCheckpoint:
                 tmp_char = 'C'
             elif node.isVisited:
-                tmp_char = u'\u2500'
+                tmp_char = u'\u2573'
             else:
                 tmp_char = ' '
             griglia[y][x] = tmp_char
 
-            if node.walls[0] != 'u':
-                griglia[y + 1][x] = u'\u2550'
-            if node.walls[1] != 'u':
-                griglia[y][x + 1] = u'\u2551'
-            if node.walls[2] != 'u':
-                griglia[y - 1][x] = u'\u2550'
-            if node.walls[3] != 'u':
-                griglia[y][x - 1] = u'\u2551'
+            for i in range(4):
+                if node.walls[i] != 'f':
+                    griglia[y + Coor.iy(i)][x + Coor.ix(i)] = (u'\u2550' if i % 2 == 0 else u'\u2551') if node.walls[i] != 'u' else '?'
 
             griglia[y + 1][x + 1] = u'\u256c'
             griglia[y + 1][x - 1] = u'\u256c'
@@ -372,7 +369,7 @@ def decodeDir(i):
     elif i == 1:
         return 'a destra'
     elif i == 2:
-        return 'indietro'
+        return 'dietro'
     elif i == 3:
         return 'a sinistra'
 
@@ -387,8 +384,7 @@ def main():
             for i in range(4):
                 tmp = input("inserire muro " + decodeDir(i) + ": ")
                 lb.set_wall(0 != int(tmp), i)
-                print(str(lb))
-        elif choose == 1:
+        elif choose == '1':
             f = input('inserire flag')
             if f == 'd':
                 lb.set_danger(0)
@@ -398,11 +394,11 @@ def main():
                 lb.set_checkpoint()
             else:
                 print('flag non riconosciuto')
-        elif choose == 2:
+        elif choose == '2':
             lb.move_to_last_checkpoint()
-        elif choose == 3:
+        elif choose == '3':
             track = lb.get_movements()
-            print("Percorso per cella sconosciuta: \nlen: " + len(track) + "\n" + str(track))
+            print("Percorso per cella sconosciuta: \nlen: " + str(len(track)) + "\n" + str(track))
             for move in track:
                 lb.move(move)
 
