@@ -1,3 +1,5 @@
+edit: in parole povere elaboro i dati del lidar
+
 aspettandosi dal lidar un array con le distanze nelle varie direzioni è possibile allineare il robot ai muri senza toccarli,
 gira per un tot(ha salvata la velocità di rotazione e il numero di passi/sample del lidar) poi comincia a anallizzare
 i dati del lidar finchè non capisce che ha vicino un muro parallelo/perpendicolare:
